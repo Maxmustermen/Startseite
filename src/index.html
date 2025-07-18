@@ -1,13 +1,109 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="de">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Startseite</title>
-  <base href="/Startseite">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    #add-website-form {
+      margin-bottom: 20px;
+    }
+    input {
+      padding: 8px;
+      margin-right: 8px;
+      width: 200px;
+    }
+    button {
+      padding: 8px 12px;
+    }
+    .tile {
+      display: inline-block;
+      width: 150px;
+      margin: 10px;
+      background: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      text-align: center;
+      text-decoration: none;
+    }
+    .tile a {
+      display: block;
+      padding: 20px;
+      color: black;
+      text-decoration: none;
+    }
+    .icon {
+      font-size: 24px;
+      background: #007acc;
+      color: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin: 0 auto 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .title {
+      font-size: 16px;
+    }
+  </style>
 </head>
 <body>
-  <app-root></app-root>
+
+  <h1>Eigene Startseite</h1>
+
+  <div id="add-website-form">
+    <input type="text" id="site-title" placeholder="Seitentitel" />
+    <input type="url" id="site-url" placeholder="https://..." />
+    <button onclick="addWebsite()">Hinzufügen</button>
+  </div>
+
+  <div id="tiles-container"></div>
+
+  <script>
+    const STORAGE_KEY = "customWebsites";
+
+    function loadWebsites() {
+      const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const container = document.getElementById("tiles-container");
+      container.innerHTML = "";
+
+      data.forEach(({ title, url }) => {
+        const tile = document.createElement("div");
+        tile.className = "tile";
+        tile.innerHTML = `
+          <a href="${url}" target="_blank">
+            <div class="icon">${title[0].toUpperCase()}</div>
+            <div class="title">${title}</div>
+          </a>
+        `;
+        container.appendChild(tile);
+      });
+    }
+
+    function addWebsite() {
+      const title = document.getElementById("site-title").value.trim();
+      const url = document.getElementById("site-url").value.trim();
+      if (!title || !url) return;
+
+      const websites = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      websites.push({ title, url });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(websites));
+
+      loadWebsites();
+
+      document.getElementById("site-title").value = "";
+      document.getElementById("site-url").value = "";
+    }
+
+    window.addEventListener("DOMContentLoaded", loadWebsites);
+  </script>
+
 </body>
 </html>
