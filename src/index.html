@@ -10,47 +10,92 @@
       padding: 20px;
       background: #f4f4f4;
     }
+
     #add-website-form {
       margin-bottom: 20px;
     }
+
     input {
       padding: 8px;
       margin-right: 8px;
       width: 200px;
     }
+
     button {
       padding: 8px 12px;
     }
+
+    #tiles-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 15px;
+    }
+
     .tile {
-      display: inline-block;
-      width: 150px;
-      margin: 10px;
       background: white;
       border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-      text-align: center;
-      text-decoration: none;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      padding: 10px;
+      position: relative;
+      transition: transform 0.2s;
     }
+
+    .tile:hover {
+      transform: scale(1.02);
+    }
+
     .tile a {
-      display: block;
-      padding: 20px;
-      color: black;
       text-decoration: none;
-    }
-    .icon {
-      font-size: 24px;
-      background: #007acc;
-      color: white;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      margin: 0 auto 10px;
+      color: inherit;
       display: flex;
+      flex-direction: column;
       align-items: center;
-      justify-content: center;
     }
+
+    .icon {
+      width: 48px;
+      height: 48px;
+      margin-bottom: 10px;
+    }
+
+    .icon img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 8px;
+    }
+
     .title {
       font-size: 16px;
+      text-align: center;
+      word-break: break-word;
+    }
+
+    .delete-btn {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      background: none;
+      border: none;
+      color: #888;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .delete-btn:hover {
+      color: red;
+    }
+
+    @media (max-width: 500px) {
+      input {
+        width: 100%;
+        margin-bottom: 8px;
+      }
+
+      #add-website-form {
+        display: flex;
+        flex-direction: column;
+      }
     }
   </style>
 </head>
@@ -69,17 +114,26 @@
   <script>
     const STORAGE_KEY = "customWebsites";
 
+    function getFaviconUrl(url) {
+      const domain = (new URL(url)).hostname;
+      return `https://www.google.com/s2/favicons?sz=64&domain=${domain}`;
+    }
+
     function loadWebsites() {
       const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
       const container = document.getElementById("tiles-container");
       container.innerHTML = "";
 
-      data.forEach(({ title, url }) => {
+      data.forEach(({ title, url }, index) => {
         const tile = document.createElement("div");
         tile.className = "tile";
+
         tile.innerHTML = `
+          <button class="delete-btn" onclick="deleteWebsite(${index})">🗑️</button>
           <a href="${url}" target="_blank">
-            <div class="icon">${title[0].toUpperCase()}</div>
+            <div class="icon">
+              <img src="${getFaviconUrl(url)}" alt="icon" />
+            </div>
             <div class="title">${title}</div>
           </a>
         `;
@@ -88,18 +142,28 @@
     }
 
     function addWebsite() {
-      const title = document.getElementById("site-title").value.trim();
-      const url = document.getElementById("site-url").value.trim();
+      const titleInput = document.getElementById("site-title");
+      const urlInput = document.getElementById("site-url");
+
+      const title = titleInput.value.trim();
+      const url = urlInput.value.trim();
       if (!title || !url) return;
 
       const websites = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
       websites.push({ title, url });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(websites));
 
-      loadWebsites();
+      titleInput.value = "";
+      urlInput.value = "";
 
-      document.getElementById("site-title").value = "";
-      document.getElementById("site-url").value = "";
+      loadWebsites();
+    }
+
+    function deleteWebsite(index) {
+      const websites = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      websites.splice(index, 1);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(websites));
+      loadWebsites();
     }
 
     window.addEventListener("DOMContentLoaded", loadWebsites);
